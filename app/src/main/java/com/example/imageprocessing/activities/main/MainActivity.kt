@@ -1,12 +1,10 @@
-package com.example.imageprocessing
+package com.example.imageprocessing.activities.main
 
 import android.content.Intent
 import android.os.Bundle
 import android.provider.MediaStore
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.example.imageprocessing.activities.editimage.EditImageActivity
 import com.example.imageprocessing.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {

@@ -13,10 +13,10 @@
         android:theme="@style/Theme.ImageFilters"
         tools:targetApi="31">
         <activity
-            android:name=".EditImageActivity"
+            android:name=".activities.editimage.EditImageActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.main.MainActivity"
             android:exported="true"
             android:theme="@style/FullScreen">
             <intent-filter>

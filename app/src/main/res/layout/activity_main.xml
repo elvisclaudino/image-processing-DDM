@@ -12,7 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:src="@drawable/landing_background_img"/>
+        android:src="@drawable/landing_background_img"
+        tools:ignore="ExtraText" />
     
     <View
         android:layout_width="match_parent"

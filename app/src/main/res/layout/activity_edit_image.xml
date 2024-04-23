@@ -52,6 +52,15 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/filtersRecyclerView"
         app:layout_constraintTop_toBottomOf="@id/layoutHeader"/>
+    
+    <ProgressBar
+        android:id="@+id/previewProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/imagePreview"
+        app:layout_constraintEnd_toEndOf="@id/imagePreview"
+        app:layout_constraintStart_toStartOf="@id/imagePreview"
+        app:layout_constraintTop_toTopOf="@id/imagePreview"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/filtersRecyclerView"

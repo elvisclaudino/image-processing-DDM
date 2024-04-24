@@ -21,14 +21,14 @@
         android:background="@drawable/landing_background"/>
     
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/buttonViewSavedImages"
+        android:id="@+id/buttonCamera"
         android:layout_width="match_parent"
         android:layout_height="@dimen/_45sdp"
         android:layout_marginStart="@dimen/_12sdp"
         android:layout_marginEnd="@dimen/_12sdp"
         android:layout_marginBottom="@dimen/_12sdp"
         android:includeFontPadding="false"
-        android:text="@string/saved_images"
+        android:text="@string/open_camera"
         android:textColor="@color/white"
         android:textSize="@dimen/_12ssp"
         app:backgroundTint="@color/buttonSavedImages"
@@ -47,7 +47,7 @@
         android:textSize="@dimen/_12ssp"
         app:backgroundTint="@color/primaryDark"
         app:cornerRadius="@dimen/_20sdp"
-        app:layout_constraintBottom_toTopOf="@id/buttonViewSavedImages"/>
+        app:layout_constraintBottom_toTopOf="@id/buttonCamera"/>
     
     <TextView
         android:id="@+id/textSubtitle"

@@ -119,12 +119,12 @@ class EditImageActivity : AppCompatActivity(), ImageFilterListener {
             onBackPressed()
         }
 
-        binding.imageSave.setOnClickListener{
-            filteredBitmap.value?.let { bitmap ->
-                Log.d("Bitmap", "${bitmap}")
-                viewModel.saveFilteredimage(this, bitmap)
+            binding.imageSave.setOnClickListener{
+                filteredBitmap.value?.let { bitmap ->
+                    Log.d("Bitmap", "${bitmap}")
+                    viewModel.saveFilteredimage(this, bitmap)
+                }
             }
-        }
 
         // This will show origin image when long click the ImageView
         binding.imagePreview.setOnLongClickListener{

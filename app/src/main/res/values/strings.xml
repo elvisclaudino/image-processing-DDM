@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">ImageProcessing</string>
-    <string name="saved_images">Imagens Salvas</string>
+    <string name="open_camera">Abrir Camera</string>
     <string name="edit_new_image">Editar Nova Imagem</string>
     <string name="let_s_create_something_new">Vamos criar algo novo!</string>
     <string name="image_filters">Filtros para imagens</string>

@@ -1,12 +1,14 @@
 package com.example.imageprocessing.activities.editimage
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import com.example.imageprocessing.activities.filteredimage.FilteredImageActivity
 import com.example.imageprocessing.activities.main.MainActivity
 import com.example.imageprocessing.adapters.ImageFiltersAdapter
 import com.example.imageprocessing.data.ImageFilter
@@ -19,6 +21,11 @@ import jp.co.cyberagent.android.gpuimage.GPUImage
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class EditImageActivity : AppCompatActivity(), ImageFilterListener {
+
+    companion object {
+        const val KEY_FILTERED_IMAGE_URI = "filteredImageUri"
+    }
+
     private lateinit var binding: ActivityEditImageBinding
     private val viewModel:EditImageViewModel by viewModel()
     private lateinit var gpuImage: GPUImage
@@ -37,8 +44,8 @@ class EditImageActivity : AppCompatActivity(), ImageFilterListener {
     }
 
     private fun setupObservers() {
-        viewModel.imagePreviewUiState.observe(this, {
-            val dataState = it ?: return@observe
+        viewModel.imagePreviewUiState.observe(this) { dtState ->
+            val dataState = dtState ?: return@observe
             binding.previewProgressBar.visibility =
                 if(dataState.isLoading) View.VISIBLE else View.GONE
             dataState.bitmap?.let { bitmap ->
@@ -56,9 +63,9 @@ class EditImageActivity : AppCompatActivity(), ImageFilterListener {
                     displayToast(error)
                 }
             }
-        })
-        viewModel.imageFilterUiState.observe(this, {
-            val imageFiltersDataState = it ?: return@observe
+        }
+        viewModel.imageFilterUiState.observe(this) { imgFiltersDataState ->
+            val imageFiltersDataState = imgFiltersDataState ?: return@observe
             binding.imageFiltersProgressBar.visibility =
                 if (imageFiltersDataState.isLoading) View.VISIBLE else View.GONE
             imageFiltersDataState.imageFilters?.let { imageFilters ->
@@ -70,10 +77,34 @@ class EditImageActivity : AppCompatActivity(), ImageFilterListener {
                     displayToast(error)
                 }
             }
-        })
-        filteredBitmap.observe(this, {bitmap ->
+        }
+        filteredBitmap.observe(this) {bitmap ->
             binding.imagePreview.setImageBitmap(bitmap)
-        })
+        }
+
+        viewModel.saveFilteredImageUiState.observe(this) { saveFilteredImgDataState ->
+            val saveFilteredImageDataState = saveFilteredImgDataState ?: return@observe
+            if (saveFilteredImageDataState.isLoading) {
+                binding.imageSave.visibility = View.GONE
+                binding.savingProgressBar.visibility = View.VISIBLE
+            } else {
+                binding.savingProgressBar.visibility = View.GONE
+                binding.imageSave.visibility = View.VISIBLE
+            }
+            saveFilteredImageDataState.uri?.let { savedImageUri ->
+                Intent(
+                    applicationContext,
+                    FilteredImageActivity::class.java
+                ).also { filteredImageIntent ->
+                    filteredImageIntent.putExtra(KEY_FILTERED_IMAGE_URI, savedImageUri)
+                    startActivity(filteredImageIntent)
+                }
+            } ?: kotlin.run {
+                saveFilteredImageDataState.error?.let { error ->
+                    displayToast(error)
+                }
+            }
+        }
     }
 
     private fun prepareImagePreview() {
@@ -86,6 +117,13 @@ class EditImageActivity : AppCompatActivity(), ImageFilterListener {
     private fun setListeners() {
         binding.imageBack.setOnClickListener {
             onBackPressed()
+        }
+
+        binding.imageSave.setOnClickListener{
+            filteredBitmap.value?.let { bitmap ->
+                Log.d("Bitmap", "${bitmap}")
+                viewModel.saveFilteredimage(this, bitmap)
+            }
         }
 
         // This will show origin image when long click the ImageView

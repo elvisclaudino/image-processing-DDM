@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Environment
+import androidx.core.content.FileProvider
 import com.example.imageprocessing.data.ImageFilter
 import jp.co.cyberagent.android.gpuimage.GPUImage
 import jp.co.cyberagent.android.gpuimage.filter.GPUImageColorMatrixFilter
@@ -12,7 +14,10 @@ import jp.co.cyberagent.android.gpuimage.filter.GPUImageRGBFilter
 import jp.co.cyberagent.android.gpuimage.filter.GPUImageSaturationBlendFilter
 import jp.co.cyberagent.android.gpuimage.filter.GPUImageSaturationFilter
 import jp.co.cyberagent.android.gpuimage.filter.GPUImageSepiaToneFilter
+import java.io.File
+import java.io.FileOutputStream
 import java.io.InputStream
+import java.lang.Exception
 
 class EditImageRepositoryImpl(private val context: Context): EditimageReposity {
 
@@ -428,5 +433,31 @@ class EditImageRepositoryImpl(private val context: Context): EditimageReposity {
 
     private fun getInputStreamFromUri(uri: Uri): InputStream? {
         return context.contentResolver.openInputStream(uri)
+    }
+
+    override suspend fun saveFilteredImage(context: Context, filteredBitmap: Bitmap): Uri? {
+        return try {
+            val mediaStorageDirectory = File(
+                context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                "Saved Images"
+            )
+            if (!mediaStorageDirectory.exists()) {
+                mediaStorageDirectory.mkdirs()
+            }
+            val fileName = "IMG_${System.currentTimeMillis()}.jpg"
+            val file = File(mediaStorageDirectory, fileName)
+            saveFile(file, filteredBitmap)
+            FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+        } catch (exception: Exception) {
+            null
+        }
+    }
+
+    private fun saveFile(file: File, bitmap: Bitmap) {
+        with(FileOutputStream(file)) {
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, this)
+            flush()
+            close()
+        }
     }
 }

@@ -1,13 +1,18 @@
 package com.example.imageprocessing.viewmodels
 
+import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
+import android.media.MediaScannerConnection
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.imageprocessing.data.ImageFilter
 import com.example.imageprocessing.repositories.EditimageReposity
 import com.example.imageprocessing.utilities.Coroutines
+import kotlin.math.log
 
 class EditImageViewModel(private val editImageRepository: EditimageReposity): ViewModel() {
 
@@ -90,6 +95,57 @@ class EditImageViewModel(private val editImageRepository: EditimageReposity): Vi
         val imageFilters: List<ImageFilter>?,
         val error: String?
     )
+
+    //endregion
+
+    //region:: Save filtered image
+
+    private val saveFilteredImageDataState = MutableLiveData<SaveFilteredImageState>()
+    val saveFilteredImageUiState: LiveData<SaveFilteredImageState> get() = saveFilteredImageDataState
+
+    fun saveFilteredimage(context: Context, filteredBitmap: Bitmap) {
+        Log.d("Teste", "teste")
+        Coroutines.io {
+            runCatching {
+                Log.d("run", "run")
+                emitSaveFilteredImageUiState(isLoading = true)
+                editImageRepository.saveFilteredImage(context, filteredBitmap)
+            }.onSuccess { savedImageUri ->
+                if (savedImageUri != null) {
+                    Log.d("oi", "oiiii")
+                    addToGallery(context, savedImageUri)
+                    emitSaveFilteredImageUiState(uri = savedImageUri)
+                } else {
+                    emitSaveFilteredImageUiState(error = "Erro ao salvar a imagem")
+                }
+            }.onFailure {
+                Log.d("erro", "erro")
+                emitSaveFilteredImageUiState(error = it.message.toString())
+            }
+        }
+    }
+
+
+    private fun emitSaveFilteredImageUiState(
+        isLoading: Boolean = false,
+        uri: Uri? = null,
+        error: String? = null
+    ) {
+        val dataState = SaveFilteredImageState(isLoading, uri, error)
+        saveFilteredImageDataState.postValue(dataState)
+    }
+
+    data class SaveFilteredImageState(
+        val isLoading: Boolean,
+        val uri: Uri?,
+        val error: String?
+    )
+
+    private fun addToGallery(context: Context, savedImageUri: Uri) {
+        val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+        mediaScanIntent.data = savedImageUri
+        context.sendBroadcast(mediaScanIntent)
+    }
 
     //endregion
 }

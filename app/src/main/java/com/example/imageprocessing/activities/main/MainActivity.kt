@@ -1,5 +1,6 @@
 package com.example.imageprocessing.activities.main
 
+import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -20,6 +21,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val REQUEST_CODE_PICK_IMAGE = 1
         const val REQUEST_IMAGE_CAPTURE = 2
+        private const val REQUEST_CODE_SAVE_IMAGE = 3
         const val KEY_IMAGE_URI = "imageUri"
     }
 
@@ -103,11 +105,12 @@ class MainActivity : AppCompatActivity() {
                 fos.flush()
             }
             savedImageUri = Uri.fromFile(imageFile)
+            Log.d("SaveImageToGallery", "Image saved successfully: $savedImageUri")
         } catch (e: IOException) {
+            Log.e("SaveImageToGallery", "Error saving image to gallery: ${e.message}")
             throw RuntimeException("Error saving image to gallery: ${e.message}")
         }
 
         return savedImageUri
     }
-
 }

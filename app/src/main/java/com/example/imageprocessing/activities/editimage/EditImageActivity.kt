@@ -1,11 +1,18 @@
 package com.example.imageprocessing.activities.editimage
 
+import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import com.example.imageprocessing.activities.filteredimage.FilteredImageActivity
@@ -19,6 +26,11 @@ import com.example.imageprocessing.utilities.show
 import com.example.imageprocessing.viewmodels.EditImageViewModel
 import jp.co.cyberagent.android.gpuimage.GPUImage
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.OutputStream
+import java.util.UUID
 
 class EditImageActivity : AppCompatActivity(), ImageFilterListener {
 
@@ -121,7 +133,7 @@ class EditImageActivity : AppCompatActivity(), ImageFilterListener {
 
             binding.imageSave.setOnClickListener{
                 filteredBitmap.value?.let { bitmap ->
-                    Log.d("Bitmap", "${bitmap}")
+                    saveImageToGallery(bitmap, this)
                     viewModel.saveFilteredimage(this, bitmap)
                 }
             }
@@ -144,4 +156,44 @@ class EditImageActivity : AppCompatActivity(), ImageFilterListener {
             }
         }
     }
+
+    // Dentro da sua classe EditImageActivity
+    private fun saveImageToGallery(bitmap: Bitmap, context: Context): Uri? {
+        // Verifica se a permissão de escrita externa foi concedida
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val resolver = context.contentResolver
+            val contentValues = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, "${UUID.randomUUID()}.jpg")
+                put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+            }
+            val imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+            imageUri?.let { uri ->
+                val outputStream: OutputStream? = resolver.openOutputStream(uri)
+                outputStream?.use { stream ->
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                    Toast.makeText(context, "Imagem salva com sucesso na galeria", Toast.LENGTH_SHORT).show()
+                    return uri
+                }
+            }
+        } else {
+            val directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            val fileName = "${UUID.randomUUID()}.jpg"
+            val file = File(directory, fileName)
+            try {
+                val fileOutputStream = FileOutputStream(file)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
+                fileOutputStream.flush()
+                fileOutputStream.close()
+                MediaScannerConnection.scanFile(context, arrayOf(file.absolutePath), null, null)
+                Toast.makeText(context, "Imagem salva com sucesso na galeria", Toast.LENGTH_SHORT).show()
+                return Uri.fromFile(file)
+            } catch (e: IOException) {
+                e.printStackTrace()
+                Toast.makeText(context, "Erro ao salvar imagem na galeria", Toast.LENGTH_SHORT).show()
+            }
+        }
+        return null
+    }
+
 }
